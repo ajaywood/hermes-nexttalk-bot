@@ -1,0 +1,2 @@
+#!/command/with-contenv sh
+echo "[s6] Poller exited (code $1 signal $2). Restarting in 1s..."
