@@ -22,7 +22,7 @@ async def memory_list(request: Request):
             p = MEMORY_DIR / r.memory_file
             rooms_info.append({"token": r.token, "name": r.name, "file": r.memory_file, "exists": p.exists(), "size": p.stat().st_size if p.exists() else 0, "modified": p.stat().st_mtime if p.exists() else None})
     backups = list_backups()
-    return templates.TemplateResponse("memory.html", {"request": request, "rooms": rooms_info, "backups": backups})
+    return templates.TemplateResponse(request, "memory.html", {"rooms": rooms_info, "backups": backups})
 
 @router.get("/{token}", response_class=HTMLResponse)
 async def memory_edit(request: Request, token: str):
@@ -34,7 +34,7 @@ async def memory_edit(request: Request, token: str):
         return RedirectResponse("/memory")
     content = load_memory(room.memory_file) if room.memory_file else ""
     versions = list_versions(room.memory_file) if room.memory_file else []
-    return templates.TemplateResponse("memory_edit.html", {"request": request, "room": room, "content": content, "versions": versions})
+    return templates.TemplateResponse(request, "memory_edit.html", {"room": room, "content": content, "versions": versions})
 
 @router.post("/{token}")
 async def memory_save(request: Request, token: str, content: str = Form("")):
