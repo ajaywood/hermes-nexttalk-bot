@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - NexTalk Bot{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+<div class="cards-row">
+    <div class="card">
+        <div class="card-label">Poller Status</div>
+        <div class="card-value {{ 'good' if poller_alive else 'bad' }}">
+            {{ '✅ Running' if poller_alive else '❌ Down' }}
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-label">Heartbeat Age</div>
+        <div class="card-value {{ 'good' if heartbeat_age and heartbeat_age < 30 else 'warn' if heartbeat_age and heartbeat_age < 120 else 'bad' }}">
+            {% if heartbeat_age is not none %}{{ heartbeat_age }}s{% else %}—{% endif %}
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-label">Active Rooms</div>
+        <div class="card-value">{{ room_count }}</div>
+    </div>
+    <div class="card">
+        <div class="card-label">Urgent Mode</div>
+        <div class="card-value {{ 'bad' if rooms | selectattr('urgent') | list else '' }}">
+            {% if rooms | selectattr('urgent') | list %}🚨 Active{% else %}—{% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="form-section">
+    <div class="section-title">Room Status</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Room</th>
+                <th>Role</th>
+                <th>Level</th>
+                <th>Enabled</th>
+                <th>Urgent</th>
+                <th>Last Msg ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in rooms %}
+            <tr>
+                <td>{{ r.name }}</td>
+                <td><span class="badge badge-{{ r.role }}">{{ r.role }}</span></td>
+                <td><span class="badge badge-l{{ r.level }}">L{{ r.level }}</span></td>
+                <td>{{ '✅' if r.enabled else '⏸️' }}</td>
+                <td>{{ '🚨' if r.urgent else '—' }}</td>
+                <td style="font-family:monospace;color:var(--text-muted)">{{ r.last_id }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="form-section">
+    <div class="section-title">Live Log
+        <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400"> — auto-refreshes every 10s</span>
+    </div>
+    <pre class="log-viewer" id="log-content"
+         hx-get="/api/logs?lines=80"
+         hx-trigger="every 10s"
+         hx-swap="innerHTML"
+         hx-on::after-request="this.scrollTop=this.scrollHeight"
+    >Loading logs...</pre>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    htmx.trigger(document.getElementById('log-content'), 'htmx:load');
+});
+</script>
+{% endblock %}
