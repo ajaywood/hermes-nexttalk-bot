@@ -12,7 +12,7 @@ class NextcloudClient:
 
     async def get_new_messages(self, token: str, since_id: int = 0) -> list[dict]:
         """IMPORTANT: Do NOT use lastKnownMessageId - it returns OLDER messages. Always fetch latest and filter manually."""
-        url = f"{self.base}/ocs/v2.php/apps/spreed/api/v1/chat/{token}?limit=50&lookIntoFuture=0"
+        url = f"{self.base}/ocs/v2.php/apps/spreed/api/v4/chat/{token}?limit=50&lookIntoFuture=0"
         try:
             async with httpx.AsyncClient(auth=self.auth, headers=self.headers, timeout=30) as client:
                 r = await client.get(url)
@@ -24,7 +24,7 @@ class NextcloudClient:
             return []
 
     async def get_history(self, token: str, limit: int = 20) -> list[dict]:
-        url = f"{self.base}/ocs/v2.php/apps/spreed/api/v1/chat/{token}?limit={limit}&lookIntoFuture=0"
+        url = f"{self.base}/ocs/v2.php/apps/spreed/api/v4/chat/{token}?limit={limit}&lookIntoFuture=0"
         try:
             async with httpx.AsyncClient(auth=self.auth, headers=self.headers, timeout=30) as client:
                 r = await client.get(url)
@@ -36,7 +36,7 @@ class NextcloudClient:
             return []
 
     async def send_message(self, token: str, message: str) -> bool:
-        url = f"{self.base}/ocs/v2.php/apps/spreed/api/v1/chat/{token}"
+        url = f"{self.base}/ocs/v2.php/apps/spreed/api/v4/chat/{token}"
         try:
             async with httpx.AsyncClient(auth=self.auth, timeout=30) as client:
                 r = await client.post(url, data={"message": message}, headers={**self.headers, "Content-Type": "application/x-www-form-urlencoded"})
