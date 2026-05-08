@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hermes NexTalk Bot{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10" defer></script>
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-icon">⚡</span>
+            <span class="brand-name">NexTalk Bot</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/" class="nav-link {{ 'active' if request.url.path == '/' else '' }}">📊 Dashboard</a></li>
+            <li><a href="/config" class="nav-link {{ 'active' if '/config' in request.url.path else '' }}">⚙️ Configuration</a></li>
+            <li><a href="/memory" class="nav-link {{ 'active' if '/memory' in request.url.path else '' }}">🧠 Memory</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="/logout" class="nav-link">🚪 Logout</a>
+        </div>
+    </nav>
+    <main class="main-content">
+        <div class="topbar">
+            <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+            <div class="status-indicator" id="poller-status-badge"
+                 hx-get="/health" hx-trigger="every 15s" hx-swap="innerHTML" hx-target="#poller-status-badge">
+                <span class="status-dot unknown"></span> Checking...
+            </div>
+        </div>
+        {% if request.query_params.get('saved') %}
+        <div class="toast toast-success">✅ Settings saved successfully.</div>
+        {% endif %}
+        {% if request.query_params.get('backed_up') %}
+        <div class="toast toast-success">✅ Backup created.</div>
+        {% endif %}
+        {% if request.query_params.get('restored') %}
+        <div class="toast toast-success">✅ Memory restored.</div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    <script>
+    // Update poller status badge from /health JSON
+    document.addEventListener('htmx:afterRequest', function(e) {
+        if (e.detail.pathInfo && e.detail.pathInfo.requestPath === '/health') {
+            try {
+                var data = JSON.parse(e.detail.xhr.responseText);
+                var dot = data.poller_alive ? 'alive' : 'dead';
+                var label = data.poller_alive ? 'Poller alive' : 'Poller down';
+                e.detail.elt.innerHTML = '<span class="status-dot ' + dot + '"></span> ' + label;
+            } catch(err) {}
+        }
+    });
+    </script>
+</body>
+</html>
