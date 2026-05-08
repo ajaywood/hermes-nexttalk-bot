@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Configuration - NexTalk Bot{% endblock %}
+{% block page_title %}Configuration{% endblock %}
+{% block content %}
+<div class="tabs" id="config-tabs">
+    <a href="#" class="tab-link active" onclick="showTab('credentials');return false;">🔑 Credentials</a>
+    <a href="#" class="tab-link" onclick="showTab('polling');return false;">⏱️ Polling</a>
+    <a href="#" class="tab-link" onclick="showTab('rooms');return false;">💬 Rooms</a>
+</div>
+
+<!-- ── Credentials Tab ────────────────────────────────────── -->
+<div id="tab-credentials" class="tab-content" style="display:block">
+<form method="POST" action="/config/credentials">
+    <div class="form-section">
+        <div class="section-title">Nextcloud</div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label>URL</label>
+                <input type="url" name="nc_url" value="{{ cfg.nextcloud.url }}" placeholder="https://nextcloud.example.com">
+            </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="nc_user" value="{{ cfg.nextcloud.user }}" placeholder="hermes">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Password / App Password
+                <span class="show-toggle" onclick="toggleShow('nc_pass')">[show]</span>
+            </label>
+            <input type="password" id="nc_pass" name="nc_pass" value="{{ cfg.nextcloud.pass_ }}" placeholder="leave blank to keep current">
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="section-title">Anthropic</div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label>API Key
+                    <span class="show-toggle" onclick="toggleShow('api_key')">[show]</span>
+                </label>
+                <input type="password" id="api_key" name="api_key" value="{{ cfg.anthropic.api_key }}" placeholder="sk-ant-...">
+            </div>
+            <div class="form-group">
+                <label>Default Model</label>
+                <input type="text" name="default_model" value="{{ cfg.anthropic.default_model }}" placeholder="claude-haiku-4-5">
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="section-title">Telegram</div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Bot Token
+                    <span class="show-toggle" onclick="toggleShow('tg_token')">[show]</span>
+                </label>
+                <input type="password" id="tg_token" name="tg_token" value="{{ cfg.telegram.bot_token }}">
+            </div>
+            <div class="form-group">
+                <label>Chat ID</label>
+                <input type="text" name="tg_chat_id" value="{{ cfg.telegram.chat_id }}">
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="section-title">Change Web UI Password</div>
+        <div class="form-group">
+            <label>New Password (leave blank to keep current)</label>
+            <input type="password" name="new_password" placeholder="New password">
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">💾 Save Credentials</button>
+</form>
+</div>
+
+<!-- ── Polling Tab ────────────────────────────────────────── -->
+<div id="tab-polling" class="tab-content" style="display:none">
+<form method="POST" action="/config/polling">
+    <div class="form-section">
+        <div class="section-title">Polling Settings</div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Main tick interval (seconds)</label>
+                <input type="number" name="tick" value="{{ cfg.polling.tick }}">
+            </div>
+            <div class="form-group">
+                <label>History limit (messages)</label>
+                <input type="number" name="history_limit" value="{{ cfg.polling.history_limit }}">
+            </div>
+            <div class="form-group">
+                <label>Urgent poll interval (seconds)</label>
+                <input type="number" name="urgent_poll_interval" value="{{ cfg.polling.urgent_poll_interval }}">
+            </div>
+            <div class="form-group">
+                <label>Urgent calm timeout (seconds)</label>
+                <input type="number" name="urgent_calm_timeout" value="{{ cfg.polling.urgent_calm_timeout }}">
+            </div>
+            <div class="form-group">
+                <label>Backup retention (days)</label>
+                <input type="number" name="backup_retention_days" value="{{ cfg.backup_retention_days }}">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Urgent trigger words (comma-separated)</label>
+            <input type="text" name="urgent_trigger_words" value="{{ cfg.polling.urgent_trigger_words | join(', ') }}">
+        </div>
+        <div class="form-group">
+            <label>Calm signal words (comma-separated)</label>
+            <input type="text" name="urgent_calm_words" value="{{ cfg.polling.urgent_calm_words | join(', ') }}">
+        </div>
+        <div class="form-group">
+            <label>Safety keywords (one per line — used for kids room alerts)</label>
+            <textarea name="safety_keywords" rows="8" style="font-family:monospace;font-size:0.75rem">{{ cfg.safety_keywords | join('\n') }}</textarea>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">💾 Save Polling Settings</button>
+</form>
+</div>
+
+<!-- ── Rooms Tab ──────────────────────────────────────────── -->
+<div id="tab-rooms" class="tab-content" style="display:none">
+{% for room in cfg.rooms %}
+<div class="form-section">
+    <div class="section-title">
+        {{ room.name }}
+        <span style="font-size:0.75rem;color:var(--text-muted);font-family:monospace">{{ room.token }}</span>
+    </div>
+    <form method="POST" action="/config/room/{{ room.token }}">
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Display Name</label>
+                <input type="text" name="name" value="{{ room.name }}">
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <select name="role">
+                    <option value="business"        {{ 'selected' if room.role.value == 'business' }}>Business</option>
+                    <option value="lilly"           {{ 'selected' if room.role.value == 'lilly' }}>Lilly</option>
+                    <option value="james"           {{ 'selected' if room.role.value == 'james' }}>James</option>
+                    <option value="family_mediator" {{ 'selected' if room.role.value == 'family_mediator' }}>Family Mediator</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Poll Level</label>
+                <select name="level">
+                    <option value="1" {{ 'selected' if room.level == 1 }}>L1 — 2 min</option>
+                    <option value="2" {{ 'selected' if room.level == 2 }}>L2 — 15 min</option>
+                    <option value="3" {{ 'selected' if room.level == 3 }}>L3 — 60 min</option>
+                    <option value="4" {{ 'selected' if room.level == 4 }}>L4 — 24 hr</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Model override (blank = default)</label>
+                <input type="text" name="model" value="{{ room.model or '' }}" placeholder="claude-haiku-4-5">
+            </div>
+            <div class="form-group">
+                <label>Memory file</label>
+                <input type="text" name="memory_file" value="{{ room.memory_file }}">
+            </div>
+        </div>
+        <div style="display:flex;gap:24px;margin-bottom:12px">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                <input type="checkbox" name="enabled" {{ 'checked' if room.enabled }} style="width:auto">
+                Enabled
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                <input type="checkbox" name="urgent_capable" {{ 'checked' if room.urgent_capable }} style="width:auto">
+                Urgent mode capable
+            </label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">Save</button>
+    </form>
+</div>
+{% endfor %}
+</div>
+
+<script>
+function showTab(name) {
+    ['credentials', 'polling', 'rooms'].forEach(function(t) {
+        document.getElementById('tab-' + t).style.display = (t === name) ? 'block' : 'none';
+    });
+    document.querySelectorAll('.tab-link').forEach(function(el, i) {
+        el.classList.toggle('active', ['credentials', 'polling', 'rooms'][i] === name);
+    });
+}
+
+function toggleShow(id) {
+    var el = document.getElementById(id);
+    el.type = (el.type === 'password') ? 'text' : 'password';
+}
+</script>
+{% endblock %}
