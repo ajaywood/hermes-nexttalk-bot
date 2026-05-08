@@ -15,7 +15,7 @@ async def config_get(request: Request):
     if not is_authenticated(request):
         return RedirectResponse("/login")
     cfg = get_config()
-    return templates.TemplateResponse("config.html", {"request": request, "cfg": cfg})
+    return templates.TemplateResponse(request, "config.html", {"cfg": cfg})
 
 @router.post("/credentials")
 async def save_credentials(request: Request, nc_url: str = Form(""), nc_user: str = Form(""), nc_pass: str = Form(""), api_key: str = Form(""), default_model: str = Form(""), tg_token: str = Form(""), tg_chat_id: str = Form(""), new_password: str = Form("")):
