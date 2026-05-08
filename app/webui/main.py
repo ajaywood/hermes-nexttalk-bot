@@ -61,7 +61,7 @@ async def health():
 async def login_get(request: Request):
     if is_authenticated(request):
         return RedirectResponse("/")
-    return templates.TemplateResponse("login.html", {"request": request, "error": None})
+    return templates.TemplateResponse(request, "login.html", {"error": None})
 
 @app.post("/login")
 async def login_post(request: Request):
@@ -72,7 +72,7 @@ async def login_post(request: Request):
         response = RedirectResponse("/", status_code=302)
         response.set_cookie("htb_session", "authenticated", httponly=True, samesite="lax")
         return response
-    return templates.TemplateResponse("login.html", {"request": request, "error": "Incorrect password"})
+    return templates.TemplateResponse(request, "login.html", {"error": "Incorrect password"})
 
 @app.get("/logout")
 async def logout():
