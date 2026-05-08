@@ -1,0 +1,4 @@
+#!/command/with-contenv sh
+export PYTHONPATH=/app
+echo "[s6] Starting Nextcloud Talk poller..."
+exec python3 -u /app/poller/main.py
