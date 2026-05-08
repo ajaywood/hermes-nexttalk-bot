@@ -12,9 +12,15 @@ services:
     environment:
       - TZ=Australia/Adelaide
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      # Nextcloud credentials — NC_* and NEXTCLOUD_* are both supported.
+      # If both are set, NEXTCLOUD_* takes priority.
       - NC_URL=${NC_URL:-}
       - NC_USER=${NC_USER:-}
       - NC_PASS=${NC_PASS:-}
+      - NC_PASSWORD=${NC_PASSWORD:-}
+      - NEXTCLOUD_URL=${NEXTCLOUD_URL:-}
+      - NEXTCLOUD_USERNAME=${NEXTCLOUD_USERNAME:-}
+      - NEXTCLOUD_APP_PASSWORD=${NEXTCLOUD_APP_PASSWORD:-}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
       - WEBUI_PASSWORD=${WEBUI_PASSWORD:-changeme}

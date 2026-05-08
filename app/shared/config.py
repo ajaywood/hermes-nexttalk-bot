@@ -78,15 +78,20 @@ def trigger_reload() -> None:
 
 def seed_from_env(cfg: AppConfig) -> AppConfig:
     changed = False
-    # NC_PASSWORD is the canonical env var; NC_PASS is an alias
+    # NC_* vars are checked first; NEXTCLOUD_* aliases are checked after and take
+    # priority over their NC_* counterparts (last write wins because we always overwrite).
     env_map = {
-        "ANTHROPIC_API_KEY": ("anthropic", "api_key"),
-        "NC_URL": ("nextcloud", "url"),
-        "NC_USER": ("nextcloud", "user"),
-        "NC_PASSWORD": ("nextcloud", "pass_"),
-        "NC_PASS": ("nextcloud", "pass_"),
-        "TELEGRAM_BOT_TOKEN": ("telegram", "bot_token"),
-        "TELEGRAM_CHAT_ID": ("telegram", "chat_id"),
+        "ANTHROPIC_API_KEY":        ("anthropic",  "api_key"),
+        "NC_URL":                   ("nextcloud",  "url"),
+        "NC_USER":                  ("nextcloud",  "user"),
+        "NC_PASSWORD":              ("nextcloud",  "pass_"),
+        "NC_PASS":                  ("nextcloud",  "pass_"),
+        "TELEGRAM_BOT_TOKEN":       ("telegram",   "bot_token"),
+        "TELEGRAM_CHAT_ID":         ("telegram",   "chat_id"),
+        # NEXTCLOUD_* aliases — processed after NC_* so they take priority
+        "NEXTCLOUD_URL":            ("nextcloud",  "url"),
+        "NEXTCLOUD_USERNAME":       ("nextcloud",  "user"),
+        "NEXTCLOUD_APP_PASSWORD":   ("nextcloud",  "pass_"),
     }
     for env_var, (section, field) in env_map.items():
         val = os.environ.get(env_var, "").strip()
