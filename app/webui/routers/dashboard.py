@@ -39,7 +39,7 @@ async def dashboard(request: Request):
     rooms_status = []
     for r in cfg.rooms:
         rooms_status.append({"name": r.name, "token": r.token, "level": r.level, "enabled": r.enabled, "role": r.role.value, "last_id": poll_state.get(r.token, 0), "urgent": urgent_mgr.is_active(r.token)})
-    return templates.TemplateResponse("dashboard.html", {"request": request, "poller_alive": poller_alive, "heartbeat_age": heartbeat_age, "rooms": rooms_status, "room_count": len([r for r in cfg.rooms if r.enabled])})
+    return templates.TemplateResponse(request, "dashboard.html", {"poller_alive": poller_alive, "heartbeat_age": heartbeat_age, "rooms": rooms_status, "room_count": len([r for r in cfg.rooms if r.enabled])})
 
 @router.get("/api/logs", response_class=PlainTextResponse)
 async def get_logs(request: Request, lines: int = 100):
