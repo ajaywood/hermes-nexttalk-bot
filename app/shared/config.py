@@ -78,10 +78,12 @@ def trigger_reload() -> None:
 
 def seed_from_env(cfg: AppConfig) -> AppConfig:
     changed = False
+    # NC_PASSWORD is the canonical env var; NC_PASS is an alias
     env_map = {
         "ANTHROPIC_API_KEY": ("anthropic", "api_key"),
         "NC_URL": ("nextcloud", "url"),
         "NC_USER": ("nextcloud", "user"),
+        "NC_PASSWORD": ("nextcloud", "pass_"),
         "NC_PASS": ("nextcloud", "pass_"),
         "TELEGRAM_BOT_TOKEN": ("telegram", "bot_token"),
         "TELEGRAM_CHAT_ID": ("telegram", "chat_id"),
@@ -89,10 +91,9 @@ def seed_from_env(cfg: AppConfig) -> AppConfig:
     for env_var, (section, field) in env_map.items():
         val = os.environ.get(env_var, "").strip()
         if val:
-            current = getattr(getattr(cfg, section), field, "")
-            if not current:
-                setattr(getattr(cfg, section), field, val)
-                changed = True
+            # Always overwrite from env so .env changes take effect on restart
+            setattr(getattr(cfg, section), field, val)
+            changed = True
     if not cfg.webui.password_hash:
         pw = os.environ.get("WEBUI_PASSWORD", "changeme")
         cfg.webui.password_hash = bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
